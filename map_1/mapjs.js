@@ -1,4 +1,4 @@
-"use strict";
+ "use strict";
 
 function SoftFloat() {
   var b = 0.2;

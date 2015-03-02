@@ -52,6 +52,7 @@ var boundsX2, boundsY2;
 'use strict';
 
 function preload() {
+  //load zips and sales data
   zips = loadStrings('zips.txt');
   sales = loadStrings('numPurchPerZip.txt');
 }
@@ -74,7 +75,6 @@ function setup() {
   messageX = 40;
   messageY = height - 40;
 
-
   faders[0] = new Integrator(unhighlightColor, dormantColor);
   faders[0].attraction = 0.5;
   faders[0].setTarget(1);
@@ -84,9 +84,6 @@ function setup() {
     faders[i].attraction = 0.5;
     faders[i].setTarget(1);
   }
-
-
-  
 
   backgroundColor = color(80);
   highlightColor = color(250);
@@ -104,13 +101,8 @@ function setup() {
   targetY1[0] = minY;
   targetY2[0] = maxY;
 
-
-  //createCanvas(windowWidth, windowHeight);
   rectMode(RADIUS);
   ellipse(RADIUS);
-
-  //var numZips = zips.length;
-  //var numSales = sales.length;
 
 }
 
@@ -144,12 +136,10 @@ function draw() {
 
       textSize(20);
       if (foundCount > 0) {
-        //console.log("found: " + foundCount);
         if (!zoomEnabled && (typedCount == 4)) {
           for (var j = 0; j < placeCount; j++) {
             if (places[j].matchDepth == typedCount) {
               places[j].draw();
-              //console.log("places of j.draw");
             }
           }
         }
@@ -183,23 +173,10 @@ function draw() {
   }
 }
 
-
-
-// function windowResized() {
-//   console.log("resize");
-//   resizeCanvas(windowWidth, windowHeight);
-//   redraw();
-
-// }
-
-
-
 function parseData(z, s) {
 
-  //console.log("got here");
   var placeIndex = 0;
 
-  //for (var i = 0; i < z.length; i++) {
   for (var i = 0; i < z.length; i++) {
 
     //console.log("got here");
@@ -211,7 +188,6 @@ function parseData(z, s) {
     var y = parseFloat(zdata[2]);
     var locationz = zdata[3];
 
-    //for (var j = 0; j < s.length; j++) {
     for (var j = 0; j < s.length; j++) {
 
       var jdata = split(s[j], "\t");
@@ -220,12 +196,8 @@ function parseData(z, s) {
       var numSales = parseInt(jdata[2]);
 
       if (code == zip) {
-        //console.log("got here");
-        //console.log(zip + " " + code);
-
         places[placeIndex++] = new Place(code, x, y, locationz, value, numSales);
         placeCount++;
-        //console.log(placeCount);
       }
     }
   }
@@ -243,13 +215,10 @@ function updateAnimation() {
 
   if (foundCount > 0) {
     zoomDepth.setTarget(typedCount);
-    //console.log("typedCount: " + typedCount + " zoomDepth: " + zoomDepth.value);
-
   } else {
     zoomDepth.setTarget(typedCount - 1);
   }
   updated |= zoomDepth.update();
-  //console.log("beep");
   updated |= zoomX1.update();
   updated |= zoomY1.update();
   updated |= zoomX2.update();
@@ -274,9 +243,6 @@ function updateAnimation() {
 
 function TX(_x) {
 
-  // var a = map(_x, minX, maxX, mapX1, mapX2);
-  // return a;
-
   if (zoomEnabled) {
     //console.log("zoomX1: " + zoomX1.value);
     return map(_x, zoomX1.value, zoomX2.value, mapX1, mapX2);
@@ -284,27 +250,21 @@ function TX(_x) {
   } else {
     return map(_x, minX, maxX, mapX1, mapX2);
   }
-
 }
 
 
 function TY(_y) {
-
-  // var b = map(_y, minY, maxY, mapY2, mapY1);
-  // return b;
 
   if (zoomEnabled) {
     return map(_y, zoomY1.value, zoomY2.value, mapY2, mapY1);
   } else {
     return map(_y, minY, maxY, mapY2, mapY1);
   }
-
 }
 
 function mousePressed() {
   if ((mouseX > width - 100) && (mouseY > height - 50)) {
     zoomEnabled = !zoomEnabled;
-    //console.log(zoomEnabled);
     redraw();
   }
 }
@@ -327,11 +287,6 @@ function keyPressed() {
     if (typedCount > 0) {
       typedCount--;
       typedChars.length--;
-      //typedChars[typedCount] = key;
-      //console.log(typedChars.length);
-      for (var j = 0; j < typedCount; j++) {
-        //console.log(typedChars[j]);
-      }
     }
 
     updateTyped();
@@ -388,18 +343,12 @@ function updateTyped() {
 
 function calcZoom() {
 
-  //console.log("calcZoom");
-
   if (foundCount !== 0) {
     // given a set of min/max coords, expand in one direction so that the 
     // selected area includes the range with the proper aspect ratio
 
-
-
     var spanX = (boundsX2 - boundsX1);
     var spanY = (boundsY2 - boundsY1);
-
-    //span X and Y are 0 once point is ID'ed?
 
     var midX = parseFloat(boundsX1 + boundsX2) / 2;
     var midY = parseFloat(boundsY1 + boundsY2) / 2;
@@ -410,32 +359,19 @@ function calcZoom() {
 
       if (spanAspect > screenAspect) {
         spanY = (spanX / width) * height; // wide
-
-        //console.log("spanY: " + spanY);
-
       } else {
         spanX = (spanY / height) * width; // tall  
-
-        //console.log("spanX: " + spanX);
       }
     } else { // if span is zero
       // use the span from one level previous
       spanX = parseFloat(targetX2[typedCount - 1] - targetX1[typedCount - 1]);
       spanY = parseFloat(targetY2[typedCount - 1] - targetY1[typedCount - 1]);
-
-      //console.log("span: " + spanX + " " + spanY);
-
     }
-    
+
     targetX1[typedCount] = parseFloat(midX - spanX / 2);
     targetX2[typedCount] = parseFloat(midX + spanX / 2);
     targetY1[typedCount] = parseFloat(midY - spanY / 2);
     targetY2[typedCount] = parseFloat(midY + spanY / 2);
-
-    //console.log("targetY2: " + targetY2[typedCount]);
-    
-    
-
 
   } else if (typedCount !== 0) {
     // nothing found at this level, so set the zoom identical to the previous
@@ -444,8 +380,6 @@ function calcZoom() {
     targetX2[typedCount] = targetX2[typedCount - 1];
     targetY2[typedCount] = targetY2[typedCount - 1];
 
-    //console.log("targetY2: " + targetY2[typedCount]);
-
   }
 
   zoomX1.setTarget(parseFloat(targetX1[typedCount]));
@@ -453,19 +387,13 @@ function calcZoom() {
   zoomX2.setTarget(parseFloat(targetX2[typedCount]));
   zoomY2.setTarget(parseFloat(targetY2[typedCount]));
 
-  //console.log("targetY1: " + targetY1[typedCount]);
-
   if (!zoomEnabled) {
     zoomX1.set(zoomX1.target);
     zoomY1.set(zoomY1.target);
     zoomX2.set(zoomX2.target);
     zoomY2.set(zoomY2.target);
-
-    //console.log("zoom: " + zoomX1.target);
-
   }
 }
-
 
 
 function Place(_code, _x, _y, _location, _value, _numSales) {
@@ -479,7 +407,7 @@ function Place(_code, _x, _y, _location, _value, _numSales) {
   this.partial = [];
   this.matchDepth = 0;
   this.count = 0;
-  
+
   this.rand1 = parseInt(random(-60, 60));
   this.rand2 = parseInt(random(-60, 60));
 
@@ -498,46 +426,50 @@ Place.prototype.draw = function() {
   var xx = parseFloat(TX(this.x));
   var yy = parseFloat(TY(this.y));
 
+  if ((xx < 0) || (yy < 0) || (xx >= width) || (yy >= height)) {
+    return;
+  }
+
   //for hovering zips
   var dist = 7;
   if ((mouseX + dist > xx && mouseX - dist < xx) && (mouseY + dist > yy && mouseY - dist < yy)) {
 
-    textSize(valScale/1.5 + 10);
+    textSize(valScale / 1.5 + 10);
     //textSize(constrain(valScale, 10, 40));
     fill(255);
     //text(this.code, xx, yy);
     text(this.code, xx + this.rand1, yy + this.rand2);
     fill(backgroundColor);
-
-  }
-
-  if ((xx < 0) || (yy < 0) || (xx >= width) || (yy >= height)) {
-    return;
   }
 
   if ((zoomDepth.value < 2.8) || !zoomEnabled) { // show simple dots
 
-    fill(200,  valScale * 2);
+    fill(200, valScale * 2);
     stroke(200, 50 + valScale);
     rect(xx, yy, valScale, valScale);
 
   } else { // show slightly more complicated dots
     // noStroke();
     // fill(200);
-    fill(200,  valScale * 2);
+    fill(200, valScale * 2);
     stroke(200, 50 + valScale);
     rect(xx, yy, valScale, valScale);
 
     if (this.matchDepth == typedCount) {
 
-      if (typedCount == 4) { // on the fourth digit, show nums for the 5th
+      if (typedCount > 2) { // show nums
 
         fill(250);
         textSize(constrain(valScale, 20, 40));
-        text(this.code % 10, TX(this.x), TY(this.y));
-        
-      } else { // show a larger box for selections
-        
+        text(this.code, TX(this.x), TY(this.y));
+
+      } else if (typedCount == 5) {
+        fill(200, 100);
+        rect(xx, yy, zoomDepth.value + valScale, zoomDepth.value + valScale);
+      } 
+      
+      else { // show a larger box for selections
+
         fill(230 + valScale)
         textSize(constrain(valScale, 20, 40));
         rect(xx, yy, zoomDepth.value + valScale, zoomDepth.value + valScale);
@@ -545,7 +477,6 @@ Place.prototype.draw = function() {
     } else { // show a slightly smaller box for unselected
       fill(200 + valScale);
       rect(xx, yy, zoomDepth.value - 1, zoomDepth.value - 1);
-
     }
   }
 };
@@ -557,14 +488,9 @@ Place.prototype.check = function() {
   this.matchDepth = 0;
 
   if (typedCount !== 0) {
-
     for (var i = typedCount; i > 0; --i) {
-
       if (typedPartials[i] == this.partial[i]) {
-        //console.log("place.check");
         this.matchDepth = i;
-        //console.log("matchDepth: " + this.matchDepth);
-        //console.log("matchDepth: " + this.matchDepth);
         break; // since starting at end, can stop now
       }
     }
@@ -575,17 +501,12 @@ Place.prototype.check = function() {
     if (typedCount == 5) {
       chosen = this;
     }
-
-    //console.log("Before: boundsX1: " + boundsX1 + " this.x: " + this.x);
-
+    
     if (this.x < boundsX1) boundsX1 = this.x;
     if (this.y < boundsY1) boundsY1 = this.y;
     if (this.x > boundsX2) boundsX2 = this.x;
     if (this.y > boundsY2) boundsY2 = this.y;
-
-    //console.log("After: boundsX1: " + boundsX1 + " this.x: " + this.x);
   }
-
 };
 
 
@@ -613,22 +534,17 @@ Place.prototype.drawChosen = function() {
     textY = TY(this.y) - 20;
   }
 
-  var xlocation = this.location + " " + nf(this.code, 5) + " " + "Number of Sales: " + this.numSales + " " + "Total Sales: " + this.value;
+  //var xlocation = this.location + " " + nf(this.code, 5) + " " + "Number of Sales: " + this.numSales + " " + "Total Sales: " + this.value;
 
   if (zoomEnabled) {
     textAlign(CENTER);
-    //text(xlocation, textX, textY);
-    //rectMode(CORNER);
-    //text(xlocation, textX, textY, 100, 150);
-    //rectMode(CENTER);
     fill(highlightColor);
-    text(this.location + " " + nf(this.code,5), textX, textY);
+    text(this.location + " " + nf(this.code, 5), textX, textY);
     text("Number of Sales: " + this.numSales, textX, textY + 25);
     text("Total Sales: " + this.value, textX, textY + 50);
 
   } else {
-    var wide = textWidth(xlocation);
-
+    var wide = textWidth(this.location);
     if (textX > width / 3) {
       textX -= wide + 8;
     } else {
@@ -639,7 +555,7 @@ Place.prototype.drawChosen = function() {
     fill(highlightColor);
     //rectMode(CORNER);
     //text(xlocation, textX, textY);
-    text(this.location + " " + nf(this.code,5), textX, textY);
+    text(this.location + " " + nf(this.code, 5), textX, textY);
     text("Number of Sales: " + this.numSales, textX, textY + 25);
     text("Total Sales: " + this.value, textX, textY + 50);
     //text(xlocation, textX, textY, 100, 150);
